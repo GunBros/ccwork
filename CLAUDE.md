@@ -21,6 +21,7 @@ npm run test:watch # Vitest 감시 모드
 ```
 
 단일 테스트 실행:
+
 ```bash
 npx vitest run src/components/NoteEditor.test.tsx
 ```
@@ -41,22 +42,22 @@ App (선택 상태 관리: selectedNoteId, isCreating)
 
 ### 레이어 분리
 
-| 레이어 | 위치 | 역할 |
-|--------|------|------|
-| 타입 | `src/types/note.ts` | `Note` 인터페이스 단일 정의 |
-| API | `src/api/notes.ts` | fetch 래핑, `createdAt`/`updatedAt` 자동 주입 |
-| Context | `src/context/NotesContext.tsx` | API 호출 + 로컬 상태 동기화 |
-| 컴포넌트 | `src/components/` | UI만 담당, 비즈니스 로직 없음 |
+| 레이어   | 위치                           | 역할                                          |
+| -------- | ------------------------------ | --------------------------------------------- |
+| 타입     | `src/types/note.ts`            | `Note` 인터페이스 단일 정의                   |
+| API      | `src/api/notes.ts`             | fetch 래핑, `createdAt`/`updatedAt` 자동 주입 |
+| Context  | `src/context/NotesContext.tsx` | API 호출 + 로컬 상태 동기화                   |
+| 컴포넌트 | `src/components/`              | UI만 담당, 비즈니스 로직 없음                 |
 
 ### Note 타입
 
 ```ts
 interface Note {
-  id: string
-  title: string
-  content: string
-  createdAt: string  // ISO 8601
-  updatedAt: string  // ISO 8601
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   // tags 필드는 미구현 — 강의에서 추후 추가 예정
 }
 ```
@@ -94,13 +95,13 @@ interface Note {
 
 ### 네이밍
 
-| 패턴 | 규칙 | 예시 |
-|------|------|------|
-| 이벤트 핸들러 | `handle` prefix | `handleSave`, `handleSelectNote` |
-| 이벤트 props | `on` prefix | `onSelect`, `onDelete`, `onDone` |
-| boolean props/state | `is` prefix | `isSelected`, `isCreating` |
-| API 함수 | HTTP 동사 스타일 | `fetchNotes`, `createNote`, `updateNote`, `deleteNote` |
-| Context 메서드 | API와 동일한 동사 | `createNote`, `updateNote`, `deleteNote` |
+| 패턴                | 규칙              | 예시                                                   |
+| ------------------- | ----------------- | ------------------------------------------------------ |
+| 이벤트 핸들러       | `handle` prefix   | `handleSave`, `handleSelectNote`                       |
+| 이벤트 props        | `on` prefix       | `onSelect`, `onDelete`, `onDone`                       |
+| boolean props/state | `is` prefix       | `isSelected`, `isCreating`                             |
+| API 함수            | HTTP 동사 스타일  | `fetchNotes`, `createNote`, `updateNote`, `deleteNote` |
+| Context 메서드      | API와 동일한 동사 | `createNote`, `updateNote`, `deleteNote`               |
 
 ## 일관성 주의 사항
 
@@ -113,6 +114,31 @@ interface Note {
 - 들여쓰기: 2칸
 - 줄 길이: 100자
 - trailing comma: all
+
+## 커밋 규칙
+
+형식: `type: 제목` + 본문 필수 (최소 2줄)
+
+```
+feat: 로그인 기능 추가
+
+어떤 변경을 했는지 설명
+왜 이 변경이 필요했는지 설명
+```
+
+| type       | 용도                  |
+| ---------- | --------------------- |
+| `feat`     | 새로운 기능           |
+| `fix`      | 버그 수정             |
+| `docs`     | 문서 변경             |
+| `style`    | 포맷 변경 (로직 무관) |
+| `refactor` | 리팩토링              |
+| `test`     | 테스트 추가/수정      |
+| `chore`    | 빌드, 설정 변경       |
+
+- 제목 비어있으면 커밋 차단 (`commitlint`)
+- 본문 2줄 미만이면 커밋 차단 (`commitlint`)
+- 커밋 전 lint-staged 자동 실행 (`husky pre-commit`)
 
 ## 테스트 환경
 
