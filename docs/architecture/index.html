@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture — Notes App</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header span {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 24px 40px 0;
+      border-bottom: 1px solid #e5e7eb;
+      background: #fff;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover { color: #111; }
+
+    .tab-btn.active {
+      color: #111;
+      border-bottom-color: #111;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 40px;
+    }
+
+    .tab-content.active { display: block; }
+
+    .diagram-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 1000px;
+    }
+
+    .diagram-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .diagram-card p {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .legend {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 2px;
+      background: #9ca3af;
+    }
+
+    .legend-line.dashed {
+      background: repeating-linear-gradient(
+        to right, #9ca3af 0, #9ca3af 4px, transparent 4px, transparent 8px
+      );
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📝 Notes App — Architecture</h1>
+  <span>React 19 · TypeScript · Vite · JSON Server</span>
+  <span style="margin-left: auto;">생성: 2026-06-16</span>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('dependency')">컴포넌트 의존성</button>
+  <button class="tab-btn" onclick="switchTab('state')">상태 흐름</button>
+</div>
+
+<!-- 탭 1: 컴포넌트 의존성 -->
+<div id="tab-dependency" class="tab-content active">
+  <div class="diagram-card">
+    <h2>컴포넌트 의존성 그래프</h2>
+    <p>
+      각 파일의 import 관계와 렌더링 포함 관계를 나타낸다.
+      실선은 렌더링 포함, 점선은 import/참조 관계를 의미한다.
+    </p>
+
+    <div class="mermaid">
+graph TD
+    subgraph Entry["진입점"]
+        main["main.tsx"]
+        App["App.tsx\n(selectedNoteId, isCreating)"]
+    end
+
+    subgraph Provider["Context / 상태 관리"]
+        NotesProvider["NotesProvider"]
+        NotesContext["NotesContext\nnotes[] · loading · error"]
+        useNotes["useNotes()"]
+    end
+
+    subgraph Components["컴포넌트"]
+        Layout["Layout\n(헤더 + 사이드바 + 메인)"]
+        NoteList["NoteList\n(노트 목록)"]
+        NoteItem["NoteItem\n(개별 노트 카드)"]
+        NoteEditor["NoteEditor\n(생성 / 편집)"]
+    end
+
+    subgraph API["API 레이어"]
+        apiNotes["api/notes.ts\nfetchNotes · createNote\nupdateNote · deleteNote"]
+        NoteType["types/note.ts\nNote interface"]
+    end
+
+    subgraph External["외부 시스템"]
+        JSONServer[("JSON Server\nlocalhost:3001")]
+    end
+
+    main -->|"렌더링"| App
+    App -->|"Provider로 감쌈"| NotesProvider
+    App -->|"렌더링"| Layout
+    App -->|"sidebar prop"| NoteList
+    App -->|"main prop"| NoteEditor
+
+    NotesProvider --- NotesContext
+    NotesContext -.->|"export"| useNotes
+
+    NoteList -->|"렌더링"| NoteItem
+    NoteList -.->|"useNotes()"| useNotes
+    NoteEditor -.->|"useNotes()"| useNotes
+
+    NotesContext -.->|"import *"| apiNotes
+    apiNotes -.->|"import"| NoteType
+    NoteItem -.->|"import"| NoteType
+
+    apiNotes -->|"HTTP REST"| JSONServer
+
+    style Entry fill:#f0f9ff,stroke:#bae6fd
+    style Provider fill:#fdf4ff,stroke:#e9d5ff
+    style Components fill:#f0fdf4,stroke:#bbf7d0
+    style API fill:#fff7ed,stroke:#fed7aa
+    style External fill:#f9fafb,stroke:#d1d5db
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-line"></div>
+        <span>렌더링 포함 관계</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed"></div>
+        <span>import / 참조 관계</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f0f9ff;border:1px solid #bae6fd"></div>
+        <span>진입점</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#fdf4ff;border:1px solid #e9d5ff"></div>
+        <span>Context / 상태</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f0fdf4;border:1px solid #bbf7d0"></div>
+        <span>컴포넌트</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#fff7ed;border:1px solid #fed7aa"></div>
+        <span>API 레이어</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 탭 2: 상태 흐름 -->
+<div id="tab-state" class="tab-content">
+  <div class="diagram-card">
+    <h2>상태 흐름</h2>
+    <p>
+      UI 상태(App의 useState)와 서버 상태(NotesContext)가 어떻게 흐르는지 보여준다.
+      UI 상태는 props로 내려가고, 서버 상태는 useNotes() 훅으로 소비된다.
+    </p>
+
+    <div class="mermaid">
+flowchart TD
+    subgraph AppState["App - UI 상태"]
+        appSI["selectedNoteId"]
+        appIC["isCreating"]
+    end
+
+    subgraph ContextState["NotesContext - 서버 상태"]
+        ctxNotes["notes 배열"]
+        ctxCreate["createNote"]
+        ctxUpdate["updateNote"]
+        ctxDelete["deleteNote"]
+    end
+
+    compNL["NoteList"]
+    compNE["NoteEditor"]
+
+    subgraph APILayer["API 레이어"]
+        apiFetch["fetchNotes"]
+        apiCreate["createNote"]
+        apiUpdate["updateNote"]
+        apiDelete["deleteNote"]
+    end
+
+    DB[(JSON Server 3001)]
+
+    appSI -->|"prop"| compNL
+    appSI -->|"prop"| compNE
+    appIC -->|"prop"| compNE
+
+    ctxNotes -->|"useNotes"| compNL
+    ctxNotes -->|"useNotes"| compNE
+
+    compNL -->|"deleteNote 호출"| ctxDelete
+    compNE -->|"createNote 호출"| ctxCreate
+    compNE -->|"updateNote 호출"| ctxUpdate
+
+    ctxCreate -->|"낙관적 업데이트"| ctxNotes
+    ctxUpdate -->|"낙관적 업데이트"| ctxNotes
+    ctxDelete -->|"낙관적 업데이트"| ctxNotes
+
+    ctxNotes -.->|"초기 로드"| apiFetch
+    ctxCreate --> apiCreate
+    ctxUpdate --> apiUpdate
+    ctxDelete --> apiDelete
+
+    apiFetch --> DB
+    apiCreate --> DB
+    apiUpdate --> DB
+    apiDelete --> DB
+
+    style AppState fill:#dbeafe,stroke:#93c5fd
+    style ContextState fill:#ede9fe,stroke:#c4b5fd
+    style compNL fill:#dcfce7,stroke:#86efac
+    style compNE fill:#dcfce7,stroke:#86efac
+    style APILayer fill:#ffedd5,stroke:#fdba74
+    style DB fill:#f3f4f6,stroke:#d1d5db
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#dbeafe;border:1px solid #93c5fd"></div>
+        <span>UI 상태 (props로 전달)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ede9fe;border:1px solid #c4b5fd"></div>
+        <span>서버 상태 (Context)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#dcfce7;border:1px solid #86efac"></div>
+        <span>컴포넌트 (useNotes() 소비)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ffedd5;border:1px solid #fdba74"></div>
+        <span>API 레이어 (fetch 래퍼)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+
+  // 탭 전환 시 해당 탭의 미렌더링 다이어그램을 그때 그린다
+  async function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    const tab = document.getElementById('tab-' + name);
+    tab.classList.add('active');
+    event.target.classList.add('active');
+
+    const unrendered = tab.querySelectorAll('.mermaid:not([data-processed="true"])');
+    if (unrendered.length > 0) {
+      await mermaid.run({ nodes: Array.from(unrendered) });
+    }
+  }
+
+  // 페이지 로드 시 첫 번째 탭만 렌더링
+  document.addEventListener('DOMContentLoaded', async () => {
+    const first = document.querySelectorAll('.tab-content.active .mermaid');
+    await mermaid.run({ nodes: Array.from(first) });
+  });
+</script>
+</body>
+</html>
