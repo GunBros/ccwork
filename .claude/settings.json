@@ -2,5 +2,18 @@
   "enabledPlugins": {
     "example-skills@anthropic-agent-skills": true,
     "skill-creator@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/ds-lint.cjs"
+          }
+        ]
+      }
+    ]
   }
 }

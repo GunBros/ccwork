@@ -103,6 +103,24 @@ interface Note {
 | API 함수            | HTTP 동사 스타일  | `fetchNotes`, `createNote`, `updateNote`, `deleteNote` |
 | Context 메서드      | API와 동일한 동사 | `createNote`, `updateNote`, `deleteNote`               |
 
+## 디자인 시스템
+
+스타일 작업 시 Claude Code 스킬을 활용한다:
+
+| 작업                    | 스킬                         |
+| ----------------------- | ---------------------------- |
+| 컴포넌트 스타일 생성    | `/ds-component [컴포넌트명]` |
+| 색상/스페이싱 토큰 조회 | `/ds-token [키워드]`         |
+| 스타일 규칙 준수 검토   | `/ds-check [파일경로]`       |
+
+스킬 내부에서 자동 참조하는 문서:
+
+- `docs/design/tokens.md` — 색상/스페이싱 단일 진실 원천
+- `docs/design/rules.md` — Do/Don't 체크리스트
+- `docs/design/index.md` — 전체 개요 및 파일 맵
+
+`Edit`/`Write` 후 `ds-lint` 훅이 자동으로 위반 패턴을 감지한다.
+
 ## 일관성 주의 사항
 
 1. **스타일링 방식 불일치**: 대부분 Tailwind 유틸리티 클래스만 사용하지만, `Layout.tsx`에서 Tailwind로 표현 불가한 경우 인라인 `style` 병용(`fontFamily`, `calc(100vh - 65px)`).
