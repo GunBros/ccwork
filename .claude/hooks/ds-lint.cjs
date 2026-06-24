@@ -57,6 +57,23 @@ process.stdin.on('end', () => {
     violations.push('[DS-004] 인라인 solid border 감지 → No-Line 규칙: 배경색 전환으로 구분. 접근성 필요 시 Ghost Border(opacity 15%)만 허용');
   }
 
+  // DS-005: map의 두 번째 파라미터(index)를 key로 사용하는 패턴 감지
+  // .map((item, index) => ...) 에서 인덱스 변수명을 추출한 뒤 key={변수명} 여부 확인
+  const mapIndexNames = new Set();
+  const mapParamPattern = /\.map\(\s*\(?\s*[\w$]+\s*,\s*([\w$]+)\s*\)?/g;
+  let mapMatch;
+  while ((mapMatch = mapParamPattern.exec(content)) !== null) {
+    mapIndexNames.add(mapMatch[1]);
+  }
+  for (const idxName of mapIndexNames) {
+    if (new RegExp(`key=\\{${idxName}\\}`).test(content)) {
+      violations.push(
+        `[DS-005] map의 index(${idxName})를 key로 사용 금지 → 고유 식별자(item.id 등) 사용`
+      );
+      break;
+    }
+  }
+
   if (violations.length > 0) {
     const srcIndex = Math.max(filePath.lastIndexOf('/src/'), filePath.lastIndexOf('\\src\\'));
     const relativePath = srcIndex >= 0 ? 'src/' + filePath.slice(srcIndex + 5).replace(/\\/g, '/') : filePath;
