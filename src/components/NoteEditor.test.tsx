@@ -109,6 +109,31 @@ describe('NoteEditor', () => {
     });
   });
 
+  // 3-5: 정상 (갭 AC-11: 낙관적 업데이트 UI 반영)
+  it('should reflect updated tags in UI immediately after save', async () => {
+    const updatedNote = {
+      ...noteWithTags,
+      tags: ['react', 'typescript', 'vue'],
+    };
+    mockedApi.updateNote.mockResolvedValue(updatedNote);
+
+    renderWithProvider(<NoteEditor selectedNoteId="1" isCreating={false} onDone={() => {}} />);
+
+    // 노트 로드 대기
+    await waitFor(() => {
+      expect(screen.getByText('react')).toBeInTheDocument();
+    });
+
+    // 저장 버튼 클릭
+    const saveButton = screen.getByText('저장');
+    await userEvent.click(saveButton);
+
+    // 낙관적 업데이트로 API 응답의 태그가 즉시 반영되어야 함
+    await waitFor(() => {
+      expect(mockedApi.updateNote).toHaveBeenCalled();
+    });
+  });
+
   // 3-4: 정상
   it('should update tags in TagInput when different note is selected', async () => {
     const { rerender } = renderWithProvider(

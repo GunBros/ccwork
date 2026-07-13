@@ -57,6 +57,15 @@ describe('TagInput', () => {
     expect(input.value).toBe('react');
   });
 
+  // 2-8: 경계 (갭 AC-3: 쉼표 경로의 입력창 클리어 검증)
+  it('should clear input when comma triggers successful tag add', async () => {
+    const onAddTag = vi.fn(() => true);
+    render(<TagInput tags={[]} onAddTag={onAddTag} />);
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    await userEvent.type(input, 'react,');
+    expect(input.value).toBe('');
+  });
+
   // 2-7: 정상
   it('should display empty input when no text entered', () => {
     render(<TagInput tags={[]} onAddTag={() => true} />);

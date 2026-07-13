@@ -156,6 +156,18 @@ describe('useTagEditor', () => {
       expect(returnValue!).toBe(false);
       expect(result.current.tags).toEqual([]);
     });
+
+    // 1-17: 경계 (갭 AC-7: 쉼표 제거 후 길이 평가 조합)
+    it('should accept tag when input with comma is exactly 20 chars after comma removal', () => {
+      const { result } = renderHook(() => useTagEditor());
+      const input = ',' + 'a'.repeat(20);
+      let returnValue: boolean;
+      act(() => {
+        returnValue = result.current.addTag(input);
+      });
+      expect(returnValue!).toBe(true);
+      expect(result.current.tags).toContain('a'.repeat(20));
+    });
   });
 
   describe('setTags', () => {
