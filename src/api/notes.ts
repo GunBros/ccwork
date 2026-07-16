@@ -16,7 +16,7 @@ export async function createNote(
   const res = await fetch(`${API_URL}/notes`, {
     method: 'POST',
     headers: JSON_HEADERS,
-    body: JSON.stringify({ tags: [], ...note, createdAt: now, updatedAt: now }),
+    body: JSON.stringify({ ...note, createdAt: now, updatedAt: now }),
   });
   if (!res.ok) throw new Error('Failed to create note');
   return res.json();
