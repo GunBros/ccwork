@@ -29,7 +29,7 @@ export function NoteEditor({ selectedNoteId, isCreating, onDone }: NoteEditorPro
       setContent('');
       setTags([]);
     }
-  }, [selectedNoteId, isCreating, selectedNote]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedNoteId, isCreating, selectedNote, setTags]);
 
   const handleSave = async () => {
     if (!title.trim()) return;
