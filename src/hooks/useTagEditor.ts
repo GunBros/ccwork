@@ -3,6 +3,7 @@ import { useState } from 'react';
 interface UseTagEditorReturn {
   tags: string[];
   addTag: (value: string) => boolean;
+  removeTag: (tag: string) => void;
   setTags: (tags: string[]) => void;
 }
 
@@ -21,5 +22,9 @@ export function useTagEditor(initialTags?: string[]): UseTagEditorReturn {
     return true;
   };
 
-  return { tags, addTag, setTags };
+  const removeTag = (tag: string): void => {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  return { tags, addTag, removeTag, setTags };
 }

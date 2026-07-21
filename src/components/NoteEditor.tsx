@@ -14,7 +14,7 @@ export function NoteEditor({ selectedNoteId, isCreating, onDone }: NoteEditorPro
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
-  const { tags, addTag, setTags } = useTagEditor();
+  const { tags, addTag, removeTag, setTags } = useTagEditor();
 
   const selectedNote = notes.find((n) => n.id === selectedNoteId);
 
@@ -90,7 +90,7 @@ export function NoteEditor({ selectedNoteId, isCreating, onDone }: NoteEditorPro
       />
 
       {/* 태그 입력 */}
-      <TagInput tags={tags} onAddTag={addTag} />
+      <TagInput tags={tags} onAddTag={addTag} onRemoveTag={removeTag} />
 
       {/* 버튼 영역 */}
       <div className="flex gap-3 mt-6 pt-4 border-t border-border">

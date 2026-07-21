@@ -3,9 +3,10 @@ import { useState } from 'react';
 interface TagInputProps {
   tags: string[];
   onAddTag: (value: string) => boolean;
+  onRemoveTag: (tag: string) => void;
 }
 
-export function TagInput({ tags, onAddTag }: TagInputProps) {
+export function TagInput({ tags, onAddTag, onRemoveTag }: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (value: string) => {
@@ -37,6 +38,12 @@ export function TagInput({ tags, onAddTag }: TagInputProps) {
       {tags.map((tag) => (
         <span key={tag} className="bg-[#dbe4e7] text-[#586064] rounded-full px-3 py-1 text-xs">
           {tag}
+          <button
+            onClick={() => onRemoveTag(tag)}
+            className="ml-1 text-[#586064]/70 hover:text-[#586064] cursor-pointer"
+          >
+            ×
+          </button>
         </span>
       ))}
       <input
