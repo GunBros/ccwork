@@ -134,6 +134,58 @@ describe('NoteEditor', () => {
     });
   });
 
+  // --- Issue #2: 태그 삭제 시나리오 ---
+
+  // 3-1 (issue-2): 정상
+  it('should include updated tags in API call when tag is removed and saved', async () => {
+    mockedApi.updateNote.mockResolvedValue({
+      ...noteWithTags,
+      tags: ['typescript'],
+    });
+
+    renderWithProvider(<NoteEditor selectedNoteId="1" isCreating={false} onDone={() => {}} />);
+
+    // 노트 로드 대기
+    await waitFor(() => {
+      expect(screen.getByText('react')).toBeInTheDocument();
+    });
+
+    // x 버튼 클릭으로 "react" 태그 삭제
+    const removeButtons = screen.getAllByRole('button', { name: /×|✕|x|삭제/i });
+    await userEvent.click(removeButtons[0]);
+
+    // 저장 버튼 클릭
+    const saveButton = screen.getByText('저장');
+    await userEvent.click(saveButton);
+
+    // updateNote 호출 시 react가 제거된 tags가 전달되어야 함
+    await waitFor(() => {
+      expect(mockedApi.updateNote).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({ tags: ['typescript'] }),
+      );
+    });
+  });
+
+  // 3-2 (issue-2): 정상
+  it('should not persist tag removal to server when save is not clicked', async () => {
+    const onDone = vi.fn();
+
+    renderWithProvider(<NoteEditor selectedNoteId="1" isCreating={false} onDone={onDone} />);
+
+    // 노트 로드 대기
+    await waitFor(() => {
+      expect(screen.getByText('react')).toBeInTheDocument();
+    });
+
+    // x 버튼 클릭으로 태그 삭제
+    const removeButtons = screen.getAllByRole('button', { name: /×|✕|x|삭제/i });
+    await userEvent.click(removeButtons[0]);
+
+    // 저장하지 않음 — updateNote가 호출되지 않아야 함
+    expect(mockedApi.updateNote).not.toHaveBeenCalled();
+  });
+
   // 3-4: 정상
   it('should update tags in TagInput when different note is selected', async () => {
     const { rerender } = renderWithProvider(

@@ -68,8 +68,37 @@ describe('TagInput', () => {
 
   // 2-7: 정상
   it('should display empty input when no text entered', () => {
-    render(<TagInput tags={[]} onAddTag={() => true} />);
+    render(<TagInput tags={[]} onAddTag={() => true} onRemoveTag={() => {}} />);
     const input = screen.getByRole('textbox') as HTMLInputElement;
     expect(input.value).toBe('');
+  });
+
+  // --- Issue #2: 태그 삭제 시나리오 ---
+
+  // 2-1 (issue-2): 정상
+  it('should render remove button on each tag badge', () => {
+    render(<TagInput tags={['react', 'vue']} onAddTag={() => true} onRemoveTag={() => {}} />);
+    const removeButtons = screen.getAllByRole('button');
+    expect(removeButtons).toHaveLength(2);
+  });
+
+  // 2-2 (issue-2): 정상
+  it('should call onRemoveTag with tag value when remove button is clicked', async () => {
+    const onRemoveTag = vi.fn();
+    render(<TagInput tags={['react', 'vue']} onAddTag={() => true} onRemoveTag={onRemoveTag} />);
+    const removeButtons = screen.getAllByRole('button');
+    await userEvent.click(removeButtons[0]);
+    expect(onRemoveTag).toHaveBeenCalledWith('react');
+  });
+
+  // 2-3 (issue-2): 정상
+  it('should remove badge from display when onRemoveTag is triggered', () => {
+    const { rerender } = render(
+      <TagInput tags={['react', 'vue']} onAddTag={() => true} onRemoveTag={() => {}} />,
+    );
+    // onRemoveTag 호출 후 부모가 tags를 갱신하면 뱃지가 사라져야 함
+    rerender(<TagInput tags={['vue']} onAddTag={() => true} onRemoveTag={() => {}} />);
+    expect(screen.queryByText('react')).not.toBeInTheDocument();
+    expect(screen.getByText('vue')).toBeInTheDocument();
   });
 });
