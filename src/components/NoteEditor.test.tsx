@@ -186,6 +186,44 @@ describe('NoteEditor', () => {
     expect(mockedApi.updateNote).not.toHaveBeenCalled();
   });
 
+  // 3-3 (issue-2): 경계 — AC-4 갭 보완
+  it('should discard tag removal when navigating to another note without saving', async () => {
+    const { rerender } = renderWithProvider(
+      <NoteEditor selectedNoteId="1" isCreating={false} onDone={() => {}} />,
+    );
+
+    // 첫 번째 노트의 태그 로드 대기
+    await waitFor(() => {
+      expect(screen.getByText('react')).toBeInTheDocument();
+    });
+
+    // "react" 태그 삭제
+    const removeButtons = screen.getAllByRole('button', { name: /×|✕|x|삭제/i });
+    await userEvent.click(removeButtons[0]);
+
+    // 저장 없이 다른 노트로 이동
+    rerender(
+      <NotesProvider>
+        <NoteEditor selectedNoteId="2" isCreating={false} onDone={() => {}} />
+      </NotesProvider>,
+    );
+
+    // updateNote가 호출되지 않았어야 함
+    expect(mockedApi.updateNote).not.toHaveBeenCalled();
+
+    // 다시 원래 노트로 돌아오면 서버 상태(원래 태그)가 복구되어야 함
+    rerender(
+      <NotesProvider>
+        <NoteEditor selectedNoteId="1" isCreating={false} onDone={() => {}} />
+      </NotesProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('react')).toBeInTheDocument();
+      expect(screen.getByText('typescript')).toBeInTheDocument();
+    });
+  });
+
   // 3-4: 정상
   it('should update tags in TagInput when different note is selected', async () => {
     const { rerender } = renderWithProvider(
