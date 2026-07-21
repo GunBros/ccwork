@@ -170,6 +170,64 @@ describe('useTagEditor', () => {
     });
   });
 
+  describe('removeTag', () => {
+    // 1-1: 정상
+    it('should remove the specified tag from tags when tag exists', () => {
+      const { result } = renderHook(() => useTagEditor(['react', 'vue', 'angular']));
+      act(() => {
+        result.current.removeTag('vue');
+      });
+      expect(result.current.tags).toEqual(['react', 'angular']);
+    });
+
+    // 1-2: 정상
+    it('should keep other tags unchanged when one tag is removed', () => {
+      const { result } = renderHook(() => useTagEditor(['react', 'vue', 'angular']));
+      act(() => {
+        result.current.removeTag('react');
+      });
+      expect(result.current.tags).toContain('vue');
+      expect(result.current.tags).toContain('angular');
+      expect(result.current.tags).not.toContain('react');
+    });
+
+    // 1-3: 경계
+    it('should not change tags when tag does not exist', () => {
+      const { result } = renderHook(() => useTagEditor(['react', 'vue']));
+      act(() => {
+        result.current.removeTag('angular');
+      });
+      expect(result.current.tags).toEqual(['react', 'vue']);
+    });
+
+    // 1-4: 경계
+    it('should result in empty array when removing the only tag', () => {
+      const { result } = renderHook(() => useTagEditor(['react']));
+      act(() => {
+        result.current.removeTag('react');
+      });
+      expect(result.current.tags).toEqual([]);
+    });
+
+    // 1-5: 경계
+    it('should remove only the first matching tag when called once', () => {
+      const { result } = renderHook(() => useTagEditor(['react', 'React']));
+      act(() => {
+        result.current.removeTag('react');
+      });
+      expect(result.current.tags).toEqual(['React']);
+    });
+
+    // 1-6: 경계
+    it('should not remove "React" when removing "react" (case-sensitive)', () => {
+      const { result } = renderHook(() => useTagEditor(['React']));
+      act(() => {
+        result.current.removeTag('react');
+      });
+      expect(result.current.tags).toEqual(['React']);
+    });
+  });
+
   describe('setTags', () => {
     // 1-15: 정상
     it('should replace tags with given array', () => {
